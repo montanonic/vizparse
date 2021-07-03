@@ -15,8 +15,15 @@ body {
     /* height: 100%; */
 }
 
+:root {
+    --text-color: rgb(241, 246, 247);
+}
+
 textarea {
-    tab-size: 16px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px;
+    background-color: rgba(128, 78, 71, 0.644);
+    color: var(--text-color);
 }
 
 .app {
@@ -29,16 +36,25 @@ textarea {
     /* font-weight: bold; */
 }
 
+.line-of-characters {
+    padding: 8px 0;
+    vertical-align: middle;
+    background-color: rgb(156, 106, 97);
+}
+.line-of-characters:nth-child(even) {
+    background-color: rgb(155, 112, 105);
+}
+
 .character-token {
-    display: inline-block;
     font-size: 16px;
+    background-color: rgba(129, 85, 78, 0.301);
+    margin: 2px 5px;
+    display: inline-block;
     padding: 5px;
     text-align: center;
     vertical-align: middle;
     width: 0.3in;
     height: 0.3in;
-    margin-right: 10px;
-    margin-top: 10px;
-    color: rgb(241, 246, 247);
-    border: 2px dotted rgb(133, 196, 221);
+    color: var(--text-color);
+    border: 1px solid rgb(122, 163, 179);
 }
