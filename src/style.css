@@ -31,6 +31,17 @@ textarea {
     height: 100%;
 }
 
+.tokenizer-builder {
+    background-color: rgba(150, 161, 165, 0.541);
+    min-height: 100px;
+}
+
+.controls-bar {
+    display: flex;
+    height: 30px;
+    align-items: center;
+}
+
 .character-tokens-view {
     margin-top: 0.3in;
     /* font-weight: bold; */

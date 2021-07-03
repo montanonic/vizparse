@@ -15,8 +15,8 @@ module Main exposing (Msg(..), main, update, view)
 
 import Browser
 import Debug
-import Html exposing (Html, div, text, textarea)
-import Html.Attributes exposing (class, cols, rows, style, value)
+import Html exposing (Html, button, div, input, p, text, textarea)
+import Html.Attributes exposing (class, cols, placeholder, rows, style, value)
 import Html.Events as Events exposing (keyCode, onInput)
 import Json.Decode as Decode
 import List.Extra as ListE
@@ -37,6 +37,7 @@ main =
 
 type alias Model =
     { codeText : String
+    , tokenizerRules : List Rule
     }
 
 
@@ -45,9 +46,26 @@ init _ =
     ( { codeText =
             """87 + 672
 """
+      , tokenizerRules = [ initialRule ]
       }
     , Cmd.none
     )
+
+
+initialRule : Rule
+initialRule =
+    let
+        singleMatcher : Matcher
+        singleMatcher =
+            { modifier = Nothing, matcherType = DigitMatcher }
+
+        singleCase : Case
+        singleCase =
+            { name = Nothing
+            , matchers = [ singleMatcher ]
+            }
+    in
+    { name = Just "Number", cases = [ singleCase ] }
 
 
 
@@ -57,6 +75,7 @@ init _ =
 type Msg
     = CodeTextAreaChanged String
     | CodeTextAreaTabPressed
+      -- | CreateRuleClicked
     | NoOp
 
 
@@ -103,6 +122,7 @@ view model =
     div
         [ class "app" ]
         [ currentCodeTextArea model.codeText
+        , tokenizerBuilder model.tokenizerRules
         , characterTokensView model.codeText
         ]
 
@@ -176,3 +196,90 @@ renderCharacterToken char =
 
         c ->
             token [] [ text (String.fromChar c) ]
+
+
+
+-- VIEW: Tokenizer Builder
+
+
+tokenizerBuilder : List Rule -> Html Msg
+tokenizerBuilder rules =
+    div [ class "tokenizer-builder" ] [ tokenizerControlsBar, tokenizerRules rules ]
+
+
+tokenizerControlsBar : Html Msg
+tokenizerControlsBar =
+    div [ class "controls-bar" ]
+        [ button [] [ text "Create Rule" ]
+        , input [ placeholder "control rules here" ] []
+        ]
+
+
+tokenizerRules : List Rule -> Html Msg
+tokenizerRules rules =
+    div [] (List.map ruleView rules)
+
+
+ruleView : Rule -> Html Msg
+ruleView rule =
+    let
+        viewMatcher matcher =
+            case matcher.matcherType of
+                DigitMatcher ->
+                    div [] [ text "digit" ]
+
+        -- Todo: add the optional name into the display
+        viewCase ruleCase =
+            div [] (List.map viewMatcher ruleCase.matchers)
+
+        viewName ruleName =
+            case ruleName of
+                Just name ->
+                    input [ value name ] []
+
+                Nothing ->
+                    input [ placeholder "Rule Name" ] []
+    in
+    div [ class "rule" ]
+        (viewName rule.name :: List.map viewCase rule.cases)
+
+
+type alias Rule =
+    { name : Maybe String
+    , cases : List Case
+    }
+
+
+{-| A case is one row of matchers, which might optionally have a name to associate them with. If a
+single case matches, the whole Rule matches.
+-}
+type alias Case =
+    { name : Maybe String
+    , matchers : List Matcher
+    }
+
+
+{-| Matchers are the specific code that will match the token, they can be built-ins or custom. Matchers can be
+modified in many ways, and a row of matchers all combine together to form a single case clause.
+-}
+type alias Matcher =
+    { modifier : Maybe MatcherModifier
+    , matcherType : MatcherType
+    }
+
+
+type MatcherModifier
+    = StarModifier
+    | PlusModifier
+
+
+{-| A grouped matcher is just multiple individual matchers combined together in one chunk,
+specifically so that you can apply a modifier to all of them.
+-}
+type MatcherType
+    = DigitMatcher
+
+
+
+-- | CustomMatcher String
+-- | GroupedMatcher (List Matcher)
