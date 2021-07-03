@@ -170,7 +170,7 @@ renderCharacterToken char =
 
         -- '\t' ->
         --     token [ class "newline" ] [ text "TAB" ]
-        -- This ensures spaces take up the same layout space as invisible characters.
+        -- This ensures spaces take up the  same layout space as invisible characters.
         ' ' ->
             token [ class "space" ] [ div [ style "visibility" "hidden" ] [ text "X" ] ]
 

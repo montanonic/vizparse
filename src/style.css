@@ -4,7 +4,7 @@ html, body, * {
 
 html {
     /* font-family: 'Courier New', Courier, monospace; */
-    background-color: rgb(88, 111, 88);
+    background-color: rgb(85, 104, 85);
     /* height: 100%; */
 }
 
@@ -47,14 +47,14 @@ textarea {
 
 .character-token {
     font-size: 16px;
-    background-color: rgba(129, 85, 78, 0.301);
-    margin: 2px 5px;
+    background-color: rgba(82, 60, 56, 0.301);
+    margin: 2px 3px;
     display: inline-block;
     padding: 5px;
     text-align: center;
     vertical-align: middle;
-    width: 0.3in;
-    height: 0.3in;
+    width: 24px;
+    height: 24px;
     color: var(--text-color);
     border: 1px solid rgb(122, 163, 179);
 }
