@@ -34,12 +34,26 @@ textarea {
 .tokenizer-builder {
     background-color: rgba(150, 161, 165, 0.541);
     min-height: 100px;
+    padding: 8px 4px;
 }
 
 .controls-bar {
     display: flex;
     height: 30px;
-    align-items: center;
+    align-items: flex-start;
+}
+
+.rule .case {
+    display: flex;
+    flex-direction: row;
+    padding-top: 5px;
+    padding-left: 25px;
+}
+
+.matcher {
+    background-color: white;
+    text-align: center;
+    margin: 0 2px;
 }
 
 .character-tokens-view {

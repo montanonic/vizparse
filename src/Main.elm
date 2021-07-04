@@ -16,8 +16,8 @@ module Main exposing (Msg(..), main, update, view)
 import Browser
 import Debug
 import Html exposing (Html, button, div, input, p, text, textarea)
-import Html.Attributes exposing (class, cols, placeholder, rows, style, value)
-import Html.Events as Events exposing (keyCode, onInput)
+import Html.Attributes exposing (class, cols, disabled, placeholder, rows, size, style, title, value)
+import Html.Events as Events exposing (keyCode, onClick, onInput)
 import Json.Decode as Decode
 import List.Extra as ListE
 
@@ -65,7 +65,7 @@ initialRule =
             , matchers = [ singleMatcher ]
             }
     in
-    { name = Just "Number", cases = [ singleCase ] }
+    { name = "Number", cases = [ singleCase, singleCase ] }
 
 
 
@@ -76,6 +76,9 @@ type Msg
     = CodeTextAreaChanged String
     | CodeTextAreaTabPressed
       -- | CreateRuleClicked
+      {- idx newName -}
+    | TokenizerRuleNameChanged Int String {- idx caseIdx -}
+    | TokenizerAddMatcher Int Int
     | NoOp
 
 
@@ -92,9 +95,38 @@ update msg model =
             -- Do nothing, prevent focus-shift.
             CodeTextAreaTabPressed ->
                 model
+
+            TokenizerRuleNameChanged idx newName ->
+                updateRule idx (\rule -> { rule | name = newName }) model
+
+            TokenizerAddMatcher idx caseIdx ->
+                updateRule idx
+                    (updateCase caseIdx
+                        (\rcase ->
+                            { rcase
+                                | matchers =
+                                    rcase.matchers
+                                        ++ [ { modifier = Nothing
+                                             , matcherType = DigitMatcher
+                                             }
+                                           ]
+                            }
+                        )
+                    )
+                    model
         )
     , Cmd.none
     )
+
+
+updateRule : Int -> (Rule -> Rule) -> Model -> Model
+updateRule ruleIdx func model =
+    { model | tokenizerRules = model.tokenizerRules |> ListE.updateAt ruleIdx func }
+
+
+updateCase : Int -> (Case -> Case) -> Rule -> Rule
+updateCase caseIdx func rule =
+    { rule | cases = rule.cases |> ListE.updateAt caseIdx func }
 
 
 
@@ -217,35 +249,42 @@ tokenizerControlsBar =
 
 tokenizerRules : List Rule -> Html Msg
 tokenizerRules rules =
-    div [] (List.map ruleView rules)
+    div [] (List.indexedMap ruleView rules)
 
 
-ruleView : Rule -> Html Msg
-ruleView rule =
+ruleView : Int -> Rule -> Html Msg
+ruleView idx rule =
     let
         viewMatcher matcher =
+            let
+                matcherInput text =
+                    input [ disabled True, class "matcher", value text, size <| String.length text ] []
+            in
             case matcher.matcherType of
                 DigitMatcher ->
-                    div [] [ text "digit" ]
+                    matcherInput "Digit"
 
         -- Todo: add the optional name into the display
-        viewCase ruleCase =
-            div [] (List.map viewMatcher ruleCase.matchers)
-
-        viewName ruleName =
-            case ruleName of
-                Just name ->
-                    input [ value name ] []
-
-                Nothing ->
-                    input [ placeholder "Rule Name" ] []
+        viewCase caseIdx ruleCase =
+            div [ class "case" ]
+                (List.map viewMatcher ruleCase.matchers
+                    ++ [ button [ title "Add Matcher", onClick <| TokenizerAddMatcher idx caseIdx ] [ text "+" ] ]
+                )
     in
-    div [ class "rule" ]
-        (viewName rule.name :: List.map viewCase rule.cases)
+    div [ class "rule" ] <|
+        List.concat
+            [ [ input
+                    [ value rule.name, onInput <| TokenizerRuleNameChanged idx, placeholder "Rule Name" ]
+                    []
+              ]
+            , List.indexedMap
+                viewCase
+                rule.cases
+            ]
 
 
 type alias Rule =
-    { name : Maybe String
+    { name : String
     , cases : List Case
     }
 
